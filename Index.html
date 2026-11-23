@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার পিডিএফ লাইব্রেরি</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center;}
+        .info { background: #e2e3e5; padding: 10px; border-radius: 5px; font-size: 14px; margin-bottom: 20px;}
+        input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;}
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%;}
+        button:hover { background-color: #0056b3; }
+        
+        /* পিডিএফ ভিউয়ার স্টাইল */
+        #pdfContainer { display: none; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; background: #333;}
+        #pdfFrame { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+<!-- মেইন কন্টেইনার (যেখানে আপনি লিংক বানাবেন) -->
+<div class="container" id="mainPage">
+    <h2>লিংক জেনারেটর</h2>
+    <div class="info">
+        <strong>নোট:</strong> Google Drive থেকে PDF এর File ID কপি করে নিচে দিন। (File ID হলো লিংকের মাঝের অংশ: <code>.../file/d/<b>এই_অংশটা</b>/view... </code>)
+    </div>
+    
+    <label>Google Drive File ID:</label>
+    <input type="text" id="driveId" placeholder="যেমন: 1A2b3C4d5E6f7G8h9I0j">
+    
+    <label>আপনার পছন্দের নাম (Slug):</label>
+    <input type="text" id="slugName" placeholder="যেমন: math-book">
+    
+    <button onclick="generateLink()">লিংক তৈরি করুন</button>
+    
+    <div id="result" style="margin-top:20px; font-weight:bold; text-align:center; color:green;"></div>
+</div>
+
+<!-- পিডিএফ দেখানোর সেকশন -->
+<div id="pdfContainer">
+    <!-- এখানে গুগল ড্রাইভের পিডিএফ লোড হবে -->
+    <iframe id="pdfFrame" allow="autoplay"></iframe>
+</div>
+
+<script>
+    // ফাংশন: লিংক তৈরি করা
+    function generateLink() {
+        const driveId = document.getElementById('driveId').value.trim();
+        const slug = document.getElementById('slugName').value.trim();
+        
+        if(!driveId || !slug) {
+            alert("দয়া করে দুটো ঘরই পূরণ করুন!");
+            return;
+        }
+
+        // আপনার ওয়েবসাইটের লিংক তৈরি (যেমন: site.com/?pdf=math-book)
+        // এখানে driveId টাও URL এ রাখা হচ্ছে, যাতে পেজ রিফ্রেশ হলেও পিডিএফ চিনতে পারে
+        const finalUrl = window.location.origin + window.location.pathname + "?pdf=" + slug + "&id=" + driveId;
+        
+        document.getElementById('result').innerHTML = "আপনার লিংক: <br><a href='" + finalUrl + "' target='_blank'>" + finalUrl + "</a>";
+    }
+
+    // ফাংশন: চেক করা যে কেউ লিংকে ঢুকেছে কি না
+    function checkUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pdfId = urlParams.get('id'); // ড্রাইভ আইডি
+        
+        if (pdfId) {
+            // যদি URL এ ID থাকে, তবে মেইন পেজ লুকিয়ে ফেলে পিডিএফ দেখাবে
+            document.getElementById('mainPage').style.display = 'none';
+            document.getElementById('pdfContainer').style.display = 'block';
+            
+            // গুগল ড্রাইভের প্রিভিউ লিংক ফরম্যাট
+            const previewUrl = "https://drive.google.com/file/d/" + pdfId + "/preview";
+            
+            // iframe এ লোড করা
+            document.getElementById('pdfFrame').src = previewUrl;
+        }
+    }
+
+    // পেজ লোড হওয়ার সাথে সাথে চেক করবে
+    window.onload = checkUrl;
+</script>
+
+</body>
+</html>
